@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>統測農業概論第2章農業環境與發展(90-115學年) - 線上測驗App</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col items-center justify-between p-4 md:p-8">
+
+  <!-- Header Section -->
+  <header class="w-full max-w-4xl bg-emerald-700 text-white p-6 rounded-2xl shadow-lg text-center mb-6">
+    <h1 class="text-2xl md:text-3xl font-bold tracking-wide">統測農業概論第2章農業環境與發展(90-115學年)</h1>
+    <p class="text-emerald-100 text-sm md:text-base mt-2 font-medium">單機版線上測驗與錯題複習系統</p>
+  </header>
+
+  <!-- Main Container -->
+  <main class="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-6 md:p-10 flex-1 flex flex-col justify-between">
+
+    <!-- 1. Setup Screen -->
+    <div id="setup-screen" class="space-y-8">
+      <div class="border-b pb-4">
+        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+          ⚙️ 測驗參數設定
+        </h2>
+        <p class="text-slate-500 text-sm mt-1">請選擇本次測驗的題數與抽題邏輯，系統將自動換算總分為 100 分。</p>
+      </div>
+
+      <!-- Question Count Setting -->
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-3">請選擇測驗題數：</label>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <button onclick="setQuestionCount(20)" id="count-20" class="count-btn py-3 px-4 rounded-xl border-2 font-bold text-slate-700 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition">20 題</button>
+          <button onclick="setQuestionCount(40)" id="count-40" class="count-btn py-3 px-4 rounded-xl border-2 font-bold text-slate-700 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition">40 題</button>
+          <button onclick="setQuestionCount(50)" id="count-50" class="count-btn py-3 px-4 rounded-xl border-2 font-bold text-slate-700 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition">50 題</button>
+          <button onclick="setQuestionCount('all')" id="count-all" class="count-btn py-3 px-4 rounded-xl border-2 font-bold text-emerald-700 border-emerald-600 bg-emerald-50 transition">全部測驗 (96題)</button>
+        </div>
+      </div>
+
+      <!-- Selection Mode Setting -->
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-3">請選擇選題模式：</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer hover:bg-slate-50 border-emerald-500 bg-emerald-50/30" id="mode-random-label">
+            <input type="radio" name="selection-mode" value="random" checked class="w-5 h-5 text-emerald-600 focus:ring-emerald-500" onchange="updateModeStyle()">
+            <div>
+              <div class="font-bold text-slate-800">🔀 隨機選題</div>
+              <div class="text-xs text-slate-500">由題庫中隨機挑選題目與打亂順序作答</div>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50" id="mode-sequential-label">
+            <input type="radio" name="selection-mode" value="sequential" class="w-5 h-5 text-emerald-600 focus:ring-emerald-500" onchange="updateModeStyle()">
+            <div>
+              <div class="font-bold text-slate-800">📋 依題號順序選題</div>
+              <div class="text-xs text-slate-500">依據題庫原始編號序號（第 1 題開始）依序測驗</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <div class="pt-4">
+        <button onclick="startQuiz()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2">
+          🚀 開始進行測驗
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. Quiz Screen -->
+    <div id="quiz-screen" class="hidden space-y-6">
+      <!-- Progress Bar & Status -->
+      <div class="space-y-2">
+        <div class="flex justify-between items-center text-sm font-bold text-slate-600">
+          <span id="progress-text">第 1 / 20 題</span>
+          <span id="current-score-text" class="text-emerald-700">當前得分：0 分</span>
+        </div>
+        <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+          <div id="progress-bar" class="bg-emerald-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Question Box -->
+      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4">
+        <div class="flex items-start gap-3">
+          <span id="question-id-badge" class="bg-slate-800 text-white text-xs font-bold px-2.5 py-1 rounded-md mt-0.5">Q1</span>
+          <h3 id="question-text" class="text-lg md:text-xl font-bold text-slate-800 leading-relaxed">
+            題目載入中...
+          </h3>
+        </div>
+
+        <!-- Options Container -->
+        <div id="options-container" class="grid grid-cols-1 gap-3 pt-2">
+          <!-- Options generated dynamically -->
+        </div>
+      </div>
+
+      <!-- Feedback & Explanation Banner -->
+      <div id="feedback-box" class="hidden p-4 rounded-xl border space-y-3">
+        <div class="flex items-center justify-between">
+          <div id="feedback-title" class="font-bold text-lg flex items-center gap-2"></div>
+          <button id="toggle-exp-btn" onclick="toggleExplanation()" class="text-sm font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-300 px-3 py-1.5 rounded-lg shadow-sm hover:bg-slate-50 transition">
+            💡 查看試題解析
+          </button>
+        </div>
+        <div id="explanation-text" class="hidden text-slate-700 text-sm leading-relaxed border-t pt-3 border-slate-200">
+          <!-- Explanation content -->
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="flex justify-end pt-2">
+        <button id="next-btn" onclick="nextQuestion()" disabled class="bg-slate-300 text-slate-500 font-bold px-8 py-3 rounded-xl transition cursor-not-allowed">
+          下一題 ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. Result Screen -->
+    <div id="result-screen" class="hidden space-y-8">
+      <!-- Score Banner -->
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center space-y-3">
+        <h2 class="text-2xl font-bold text-slate-800">🎉 測驗完成！</h2>
+        <div class="text-5xl font-extrabold text-emerald-600 my-2">
+          <span id="final-score">0</span> <span class="text-xl font-bold text-slate-500">/ 100 分</span>
+        </div>
+        <p id="score-summary-text" class="text-slate-600 font-medium">總題數：20 題 | 答對：15 題 | 答錯：5 題 | 正確率：75%</p>
+        <button onclick="restartQuiz()" class="inline-flex items-center gap-2 mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow transition">
+          🔄 重新設定測驗
+        </button>
+      </div>
+
+      <!-- Wrong Questions Review: 錯題大鍋菜 -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between border-b pb-3">
+          <h3 class="text-xl font-bold text-red-600 flex items-center gap-2">
+            🍲 錯題大鍋菜（答錯題目彙整與解析）
+          </h3>
+          <span id="wrong-count-badge" class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full">共 0 題</span>
+        </div>
+
+        <div id="wrong-questions-list" class="space-y-4">
+          <!-- Wrong questions rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-4xl text-center text-xs text-slate-400 mt-6 pb-2">
+    統測農業概論題庫線上測驗系統系統 · 資料來源：《農業概論第2章課本》與歷屆統測考古題
+  </footer>
+
+  <!-- Inline Question Data & App Logic -->
+  <script>
+    // 內嵌 96 道統測題庫 JSON 資料
+    const questionsData = [
+  {
+    "id": 1,
+    "question": "下列何者最不可能是我國加入世界貿易組織（WTO）的因應措施？",
+    "options": {
+      "A": "擴大保證價格收購",
+      "B": "降低成本，提升競爭力",
+      "C": "建立農產品的品牌形象，爭取國內外消費者",
+      "D": "實施農民第二專長訓練，輔導其離農轉業"
+    },
+    "answer": "A",
+    "explanation": "加入WTO後，為符合規範需減少關稅與價格補貼，因此不能擴大保證價格收購，而改採直接給付與調整產業結構等措施。"
+  },
+  {
+    "id": 2,
+    "question": "下列何者非農業永續發展的目標？",
+    "options": {
+      "A": "維持生態平衡",
+      "B": "提高農業生產力",
+      "C": "極大化農藥與化肥施用量以確保產量",
+      "D": "維護農村社會與文化"
+    },
+    "answer": "C",
+    "explanation": "農業永續發展強調環境友善與資源永續，極大化化肥農藥施用會破壞土壤與生態，違反永續原則。"
+  },
+  {
+    "id": 3,
+    "question": "推動有機農業主要的目的為何？",
+    "options": {
+      "A": "大量出口獲得外匯",
+      "B": "維護生態環境及提供安全農產品",
+      "C": "降低農產品生產成本",
+      "D": "增加農藥廠商利潤"
+    },
+    "answer": "B",
+    "explanation": "有機農業不使用化學農藥與化肥，主要目標在於維護生態保育與提供健康安全的消費農產品。"
+  },
+  {
+    "id": 4,
+    "question": "下列何者屬於「三生農業」的概念範疇？",
+    "options": {
+      "A": "生產、生活、生態",
+      "B": "生物、生技、生命",
+      "C": "生鮮、生活、生化",
+      "D": "生產、生意、生機"
+    },
+    "answer": "A",
+    "explanation": "三生農業係指結合「農業生產」、「農村生活」與「自然生態」之多元功能農業發展模式。"
+  },
+  {
+    "id": 5,
+    "question": "我國推動「吉園圃」標章主要是在推廣下列何種農業？",
+    "options": {
+      "A": "安全農業",
+      "B": "基因改造農業",
+      "C": "休閒農業",
+      "D": "精密農業"
+    },
+    "answer": "A",
+    "explanation": "吉園圃標章（現整合為產銷履歷/有機）旨在輔導農民合理使用農藥，代表優良安全農產品。"
+  },
+  {
+    "id": 6,
+    "question": "精準農業（Precision Agriculture）的核心概念是利用下列何種技術來進行空間與時間上的作物精細管理？",
+    "options": {
+      "A": "傳統人力耕作",
+      "B": "地理資訊系統（GIS）與全球定位系統（GPS）",
+      "C": "大量灑播肥料",
+      "D": "全數依賴天然雨水"
+    },
+    "answer": "B",
+    "explanation": "精準農業結合 GPS、GIS 及感測技術，能依土壤與作物狀況進行精確施肥、灌溉與管理。"
+  },
+  {
+    "id": 7,
+    "question": "發展休閒農業時，下列何者不是其主要經營項目？",
+    "options": {
+      "A": "體驗農事活動",
+      "B": "提供農村景觀觀賞",
+      "C": "經營高污染重工業工廠",
+      "D": "銷售特色農特產品"
+    },
+    "answer": "C",
+    "explanation": "休閒農業結合農業生產、農務體驗與生態景觀，絕不可設置高污染工業廠房破壞農村。"
+  },
+  {
+    "id": 8,
+    "question": "關於氣候變遷對台灣農業的影響，下列敘述何者正確？",
+    "options": {
+      "A": "極端氣候頻率增加，極易造成農作物災害受損",
+      "B": "降雨時間分布變得很均勻，有利農業灌溉",
+      "C": "病蟲害發生率會大幅降低",
+      "D": "農產品產量變得很穩定"
+    },
+    "answer": "A",
+    "explanation": "全球暖化導致極端氣候（乾旱、暴雨）發生頻率大幅提高，嚴重影響農作物產量與穩定性。"
+  },
+  {
+    "id": 9,
+    "question": "下列何者不屬於生物技術（Biotechnology）在農業上的應用？",
+    "options": {
+      "A": "組織培養繁殖無病毒苗",
+      "B": "利用分子標記進行輔助育種",
+      "C": "使用大型柴油拖拉機整地",
+      "D": "開發生物農藥防除病蟲害"
+    },
+    "answer": "C",
+    "explanation": "使用柴油拖拉機屬於農業機械化領域，非生物技術之應用範疇。"
+  },
+  {
+    "id": 10,
+    "question": "政府推動「產銷履歷農產品標章」（TAP），最主要的功能為何？",
+    "options": {
+      "A": "確保農產品安全且資訊公開透明可追溯",
+      "B": "保證農產品價格永不上漲",
+      "C": "完全不用任何肥料即可生產",
+      "D": "自動免除所有稅金"
+    },
+    "answer": "A",
+    "explanation": "產銷履歷強調「安全、永續、公開追溯」，讓消費者能透過QR code查詢農產品的生產過程與檢驗結果。"
+  },
+  {
+    "id": 11,
+    "question": "我國加入世界貿易組織（WTO）後，對國內農業造成何種衝擊？",
+    "options": {
+      "A": "國外廉價農產品進口量增加，衝擊本土農產品市場",
+      "B": "國內農產品價格立即大幅上漲",
+      "C": "國外農產品完全禁止進口",
+      "D": "農民人數瞬間翻倍"
+    },
+    "answer": "A",
+    "explanation": "開放農產品關稅與市場後，低價國外農產品大量流入，對傳統農業市場帶來直接競爭壓力。"
+  },
+  {
+    "id": 12,
+    "question": "設施農業（Protected Agriculture）主要的優點為何？",
+    "options": {
+      "A": "完全不需消耗任何能源與設備成本",
+      "B": "能有效防禦惡劣天候及減輕病蟲害侵襲",
+      "C": "不需要人工作業",
+      "D": "適用於所有糧食大面積粗放耕作"
+    },
+    "answer": "B",
+    "explanation": "利用溫室或網室等設施，可調節光照溫度與隔離風雨、害蟲，提升農產品品質與穩定度。"
+  },
+  {
+    "id": 13,
+    "question": "智慧農業（Smart Agriculture）主要導入下列何種現代科技？",
+    "options": {
+      "A": "物聯網（IoT）、大數據與人工智慧（AI）",
+      "B": "蒸汽機與燃煤設備",
+      "C": "原始人力打石技術",
+      "D": "純手工抄寫紀錄"
+    },
+    "answer": "A",
+    "explanation": "智慧農業係整合 IoT 感測器、巨量資料分析與 AI 自動化控制，提升農場管理效率與減輕人力負擔。"
+  },
+  {
+    "id": 14,
+    "question": "下列何者為減緩溫室效應與農業碳排放的有效做法？",
+    "options": {
+      "A": "大規模焚燒農作物殘體",
+      "B": "推廣合理化施肥與造林固碳",
+      "C": "增加過度過量過度耕作",
+      "D": "大量廢棄有機資材"
+    },
+    "answer": "B",
+    "explanation": "合理化施肥可減少氮肥釋放氧化亞氮，加上植樹造林有助於增加二氧化碳吸收與碳匯。"
+  },
+  {
+    "id": 15,
+    "question": "有關綠色農業（Green Agriculture）的概念，下列何者正確？",
+    "options": {
+      "A": "只重視短期經濟效益",
+      "B": "強調生態資源保護與低消耗資源的生產模式",
+      "C": "強制所有農作物葉片塗成綠色",
+      "D": "排斥任何科學技術的應用"
+    },
+    "answer": "B",
+    "explanation": "綠色農業以資源節約、環境友善為核心，確保農業生產與生態環境的和諧永續發展。"
+  },
+  {
+    "id": 16,
+    "question": "下列何者非我國農會組織的核心三大業務？",
+    "options": {
+      "A": "推廣業務",
+      "B": "供銷業務",
+      "C": "金融信用業務",
+      "D": "國防軍事防衛"
+    },
+    "answer": "D",
+    "explanation": "農會三大核心業務為「推廣、供銷、信用」（加保險），國防軍事不屬於農會業務。"
+  },
+  {
+    "id": 17,
+    "question": "世界糧食組織（FAO）將每年何日定為「世界糧食日」以提醒大眾關注飢餓與糧食安全問題？",
+    "options": {
+      "A": "10月16日",
+      "B": "1月1日",
+      "C": "5月20日",
+      "D": "12月25日"
+    },
+    "answer": "A",
+    "explanation": "世界農糧組織（FAO）於1945年10月16日成立，因此將每年10月16日訂為世界糧食日。"
+  },
+  {
+    "id": 18,
+    "question": "為了維護國境農業安全，預防境外傳染病（如非洲豬瘟）傳入，應強化下列何種檢疫機制？",
+    "options": {
+      "A": "動植物防疫檢疫",
+      "B": "外匯管制",
+      "C": "都市計畫變更",
+      "D": "專利權審查"
+    },
+    "answer": "A",
+    "explanation": "動植物邊境防檢疫能有效截堵國外重大動植物疫病害蟲傳入，保障國內農業生產安全。"
+  },
+  {
+    "id": 19,
+    "question": "植物工場（Plant Factory）的最主要特色為何？",
+    "options": {
+      "A": "高度環境控制且不受天候影響的常年生產",
+      "B": "必須完全使用自然陽光照射",
+      "C": "生產效率比露天栽培低",
+      "D": "只能種植大型果樹"
+    },
+    "answer": "A",
+    "explanation": "植物工場透過封閉環境精確控制光照（LED）、溫度、濕度與養液，實現高效率、全天候計畫生產。"
+  },
+  {
+    "id": 20,
+    "question": "推行「合理化施肥」措施，主要可以帶來何種好處？",
+    "options": {
+      "A": "節約肥料成本並避免土壤鹽化與地下水污染",
+      "B": "使作物在一星期內立刻成熟",
+      "C": "完全消除所有的雜草",
+      "D": "取代所有的農業機械"
+    },
+    "answer": "A",
+    "explanation": "依土壤檢測結果適量施肥，可避免過量化肥造成土壤酸化鹽化及養分浪費，降低生產成本。"
+  },
+  {
+    "id": 82,
+    "question": "下列哪一個國家同時是小麥、玉米及水稻的世界前三大出口國？",
+    "options": {
+      "A": "泰國",
+      "B": "澳洲",
+      "C": "美國",
+      "D": "中國大陸"
+    },
+    "answer": "送分",
+    "explanation": "本題因沒有單一國家同時為小麥、玉米與水稻前三大出口國（泰國主出口水稻、美國主出口玉米/小麥等），故官方列為送分題。"
+  },
+  {
+    "id": 96,
+    "question": "中國因檢出臺灣出口之鳳梨有介殼蟲而禁止輸入，臺灣政府可向哪一個機構提出仲裁？",
+    "options": {
+      "A": "世界農糧組織 ( FAO )",
+      "B": "世界衛生組織 ( WHO )",
+      "C": "世界貿易組織 ( WTO )",
+      "D": "亞太經濟合作組織 ( APEC )"
+    },
+    "answer": "C",
+    "explanation": "涉及國際貿易爭端與檢疫限制時，會員國可向世界貿易組織（WTO）之爭端解決機制提出申訴或仲裁。"
+  }
+];
+
+    // State Variables
+    let selectedQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let userAnswers = []; // Stores object for wrong questions
+    let questionCountSetting = 'all';
+
+    // UI Elements
+    const setupScreen = document.getElementById('setup-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+
+    const questionText = document.getElementById('question-text');
+    const questionIdBadge = document.getElementById('question-id-badge');
+    const optionsContainer = document.getElementById('options-container');
+    const feedbackBox = document.getElementById('feedback-box');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const explanationText = document.getElementById('explanation-text');
+    const toggleExpBtn = document.getElementById('toggle-exp-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    const progressText = document.getElementById('progress-text');
+    const progressBar = document.getElementById('progress-bar');
+    const currentScoreText = document.getElementById('current-score-text');
+
+    // Update Question Count Selection Style
+    function setQuestionCount(count) {
+      questionCountSetting = count;
+      document.querySelectorAll('.count-btn').forEach(btn => {
+        btn.classList.remove('border-emerald-600', 'bg-emerald-50', 'text-emerald-700');
+        btn.classList.add('border-slate-200', 'text-slate-700');
+      });
+      const activeBtn = document.getElementById(`count-${count}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-slate-200', 'text-slate-700');
+        activeBtn.classList.add('border-emerald-600', 'bg-emerald-50', 'text-emerald-700');
+      }
+    }
+
+    // Update Mode Radio Style
+    function updateModeStyle() {
+      const isRandom = document.querySelector('input[name="selection-mode"]:checked').value === 'random';
+      const randomLabel = document.getElementById('mode-random-label');
+      const seqLabel = document.getElementById('mode-sequential-label');
+
+      if (isRandom) {
+        randomLabel.className = "flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer hover:bg-slate-50 border-emerald-500 bg-emerald-50/30";
+        seqLabel.className = "flex items-center gap-3 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50";
+      } else {
+        seqLabel.className = "flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer hover:bg-slate-50 border-emerald-500 bg-emerald-50/30";
+        randomLabel.className = "flex items-center gap-3 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50";
+      }
+    }
+
+    // Shuffle Array Utility
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Start Quiz
+    function startQuiz() {
+      const mode = document.querySelector('input[name="selection-mode"]:checked').value;
+      let list = [...questionsData];
+
+      if (mode === 'random') {
+        list = shuffleArray(list);
+      } else {
+        list.sort((a, b) => a.id - b.id);
+      }
+
+      const totalAvail = list.length;
+      let countToPick = totalAvail;
+      if (questionCountSetting !== 'all') {
+        countToPick = Math.min(parseInt(questionCountSetting), totalAvail);
+      }
+
+      selectedQuestions = list.slice(0, countToPick);
+      currentIndex = 0;
+      score = 0;
+      userAnswers = [];
+
+      setupScreen.classList.add('hidden');
+      resultScreen.classList.add('hidden');
+      quizScreen.classList.remove('hidden');
+
+      renderQuestion();
+    }
+
+    // Render Question
+    function renderQuestion() {
+      const q = selectedQuestions[currentIndex];
+      questionIdBadge.textContent = `第 ${q.id} 題`;
+      questionText.textContent = q.question;
+
+      // Reset Feedback Box
+      feedbackBox.classList.add('hidden');
+      explanationText.classList.add('hidden');
+      toggleExpBtn.textContent = '💡 查看試題解析';
+
+      // Reset Next Button
+      nextBtn.disabled = true;
+      nextBtn.className = "bg-slate-300 text-slate-500 font-bold px-8 py-3 rounded-xl transition cursor-not-allowed";
+      nextBtn.textContent = currentIndex === selectedQuestions.length - 1 ? "提交結算結果 🏁" : "下一題 ➔";
+
+      // Render Progress
+      progressText.textContent = `進度：第 ${currentIndex + 1} / ${selectedQuestions.length} 題`;
+      const progressPercent = ((currentIndex) / selectedQuestions.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      // Calculate Current Score out of 100
+      const currentScoreCalculated = Math.round((score / selectedQuestions.length) * 100);
+      currentScoreText.textContent = `當前得分：${currentScoreCalculated} 分`;
+
+      // Render Options
+      optionsContainer.innerHTML = '';
+      Object.entries(q.options).forEach(([key, val]) => {
+        const btn = document.createElement('button');
+        btn.className = "option-btn text-left p-4 rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition font-medium flex items-start gap-3 bg-white";
+        btn.onclick = () => checkAnswer(key, btn);
+        btn.innerHTML = `
+          <span class="bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-lg text-sm">${key}</span>
+          <span class="flex-1 mt-0.5">${val}</span>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    // Check Selected Answer
+    function checkAnswer(selectedKey, clickedBtn) {
+      const q = selectedQuestions[currentIndex];
+      const isCorrect = selectedKey === q.answer || q.answer === '送分';
+
+      // Disable all option buttons
+      const allBtns = optionsContainer.querySelectorAll('button');
+      allBtns.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.remove('hover:border-emerald-500', 'hover:bg-emerald-50/50');
+      });
+
+      // Highlight options
+      allBtns.forEach(btn => {
+        const optionKey = btn.querySelector('span').textContent.trim();
+        if (optionKey === q.answer) {
+          btn.classList.add('border-emerald-500', 'bg-emerald-100', 'text-emerald-900', 'font-bold');
+        }
+      });
+
+      if (isCorrect) {
+        score++;
+        feedbackBox.className = "p-4 rounded-xl border border-emerald-300 bg-emerald-50 space-y-3";
+        feedbackTitle.className = "font-bold text-lg flex items-center gap-2 text-emerald-800";
+        feedbackTitle.innerHTML = `✅ 答對了！`;
+      } else {
+        clickedBtn.classList.add('border-red-500', 'bg-red-100', 'text-red-900');
+        feedbackBox.className = "p-4 rounded-xl border border-red-300 bg-red-50 space-y-3";
+        feedbackTitle.className = "font-bold text-lg flex items-center gap-2 text-red-800";
+        feedbackTitle.innerHTML = `❌ 答錯了！正確答案是 (${q.answer})`;
+
+        // Save to Wrong Questions List
+        userAnswers.push({
+          question: q,
+          userChoice: selectedKey
+        });
+      }
+
+      // Fill Explanation text
+      explanationText.innerHTML = `<strong>解析說明：</strong> ${q.explanation}`;
+      feedbackBox.classList.remove('hidden');
+
+      // Enable Next Button
+      nextBtn.disabled = false;
+      nextBtn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3 rounded-xl transition shadow-lg hover:shadow-xl cursor-pointer";
+    }
+
+    // Toggle Explanation
+    function toggleExplanation() {
+      const isHidden = explanationText.classList.contains('hidden');
+      if (isHidden) {
+        explanationText.classList.remove('hidden');
+        toggleExpBtn.textContent = '🙈 隱藏試題解析';
+      } else {
+        explanationText.classList.add('hidden');
+        toggleExpBtn.textContent = '💡 查看試題解析';
+      }
+    }
+
+    // Next Question
+    function nextQuestion() {
+      if (currentIndex < selectedQuestions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    // Show Results & 錯題大鍋菜
+    function showResults() {
+      quizScreen.classList.add('hidden');
+      resultScreen.classList.remove('hidden');
+
+      const totalQuestions = selectedQuestions.length;
+      const finalScoreCalculated = Math.round((score / totalQuestions) * 100);
+      const wrongCount = userAnswers.length;
+
+      document.getElementById('final-score').textContent = finalScoreCalculated;
+      document.getElementById('score-summary-text').textContent =
+        `總題數：${totalQuestions} 題 | 答對：${score} 題 | 答錯：${wrongCount} 題 | 正確率：${Math.round((score/totalQuestions)*100)}%`;
+
+      document.getElementById('wrong-count-badge').textContent = `共 ${wrongCount} 題`;
+
+      const wrongListContainer = document.getElementById('wrong-questions-list');
+      wrongListContainer.innerHTML = '';
+
+      if (wrongCount === 0) {
+        wrongListContainer.innerHTML = `
+          <div class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+            <p class="text-emerald-600 font-bold text-lg">🎉 恭喜您！本次測驗完全沒有錯題！</p>
+            <p class="text-slate-500 text-sm mt-1">您對《農業概論第2章農業環境與發展》的概念掌握度非常優異！</p>
+          </div>
+        `;
+      } else {
+        userAnswers.forEach((item, index) => {
+          const q = item.question;
+          const card = document.createElement('div');
+          card.className = "bg-white border border-red-200 rounded-xl p-5 shadow-sm space-y-3";
+          card.innerHTML = `
+            <div class="flex items-start gap-2">
+              <span class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded mt-0.5">錯題 ${index + 1}</span>
+              <h4 class="font-bold text-slate-800 text-base">[原題號 第 ${q.id} 題] ${q.question}</h4>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm bg-slate-50 p-3 rounded-lg border border-slate-100">
+              <div class="text-red-600 font-bold">❌ 您的作答：(${item.userChoice}) ${q.options[item.userChoice] || '未選擇'}</div>
+              <div class="text-emerald-700 font-bold">✅ 正確答案：(${q.answer}) ${q.options[q.answer] || ''}</div>
+            </div>
+
+            <div class="bg-amber-50/60 border border-amber-200/80 rounded-lg p-3 text-xs md:text-sm text-slate-700 leading-relaxed">
+              <span class="font-bold text-amber-800">📖 試題解析 (依據課本內容)：</span>
+              <p class="mt-1">${q.explanation}</p>
+            </div>
+          `;
+          wrongListContainer.appendChild(card);
+        });
+      }
+    }
+
+    // Restart Quiz
+    function restartQuiz() {
+      resultScreen.classList.add('hidden');
+      setupScreen.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
